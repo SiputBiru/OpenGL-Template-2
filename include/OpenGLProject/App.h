@@ -3,7 +3,8 @@
 
 // This define is crucial when linking GLEW statically
 // #define GLEW_STATIC
-#include <GL/glew.h>
+// #include <GL/glew.h>
+#include <glad/glad.h>
 
 #include <GLFW/glfw3.h>
 #include <string>

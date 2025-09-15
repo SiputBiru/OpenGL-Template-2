@@ -1,4 +1,5 @@
 #include "OpenGLProject/App.h"
+#include <GLFW/glfw3.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -51,8 +52,11 @@ void App::run() {
 // --- Private Methods ---
 void App::init() {
   // --- GLEW Initialization ---
-  if (glewInit() != GLEW_OK) {
-    throw std::runtime_error("Failed to initialize GLEW");
+  // if (glewInit() != GLEW_OK) {
+  //   throw std::runtime_error("Failed to initialize GLEW");
+  // }
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    throw std::runtime_error("Failed to initialize GLAD");
   }
 
   std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;

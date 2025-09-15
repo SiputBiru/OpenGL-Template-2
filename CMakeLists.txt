@@ -33,6 +33,7 @@ FetchContent_Declare(
     GIT_TAG        1.0.1
 )
 
+
 FetchContent_MakeAvailable(glfw glm)
 
 # =============================================================================
@@ -42,23 +43,19 @@ set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)
 message(STATUS "Found required system libraries.")
 
-# GLEW
-# set(GLEW_CMAKELIST_PATH "${CMAKE_SOURCE_DIR}/external/glew/build/cmake/CMakeLists.txt")
-# if(NOT EXISTS "${GLEW_CMAKELIST_PATH}")
-# message(FATAL_ERROR "GLEW source not found. Please download and extract GLEW to '${CMAKE_SOURCE_DIR}/external/glew'.")
-#
-# endif()
+# --- LOCAL: GLAD ---
+add_subdirectory(${CMAKE_SOURCE_DIR}/external/glad)
+message(STATUS "Added local GLAD from external/glad")
 
-find_package(GLEW REQUIRED)
-
-message(STATUS "Found local GLEW source. Adding it to the build.")
-# Add the GLEW build script to our project. Note the path is to the 'cmake' subfolder.
-# add_subdirectory(${CMAKE_SOURCE_DIR}/external/glew/build/cmake)
 
 # =============================================================================
 # DEFINE THE EXECUTABLE
 # =============================================================================
 file(GLOB_RECURSE SOURCES "src/*.cpp")
+# set(PROJECT_SOURCE
+#   src/main.cpp
+#   src/App.cpp
+# )
 add_executable(${PROJECT_NAME} ${SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
@@ -72,14 +69,13 @@ target_include_directories(${PROJECT_NAME} PUBLIC
     ${glm_SOURCE_DIR}
 )
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE GLEW_STATIC)
 
 message(STATUS "Linking libraries to ${PROJECT_NAME}...")
 target_link_libraries(${PROJECT_NAME} PRIVATE
     OpenGL::GL
-    GLEW::GLEW
     glfw
     glm
+    glad
 )
 
 # =============================================================================
