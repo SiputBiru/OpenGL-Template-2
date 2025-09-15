@@ -22,3 +22,5 @@ bin/
 *.lib
 *.o
 *.obj
+
+.cache/
