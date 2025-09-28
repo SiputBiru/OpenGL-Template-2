@@ -18,13 +18,16 @@ A modern, cross-platform C++ template for starting OpenGL projects. It uses a cl
 
 ## 📂 Project Structure
 
-The project is organized to keep code, assets, and third-party libraries separate and clean.
+The project is organized to keep code, assets, and third-party libraries separate and clean. <br/>
+```
 .
 ├── assets/              # Shaders, textures, models, etc.
 ├── external/            # Third-party libraries (local or fetched by CMake)
 ├── include/             # Your project's header files (.h, .hpp)
 ├── src/                 # Your project's source files (.cpp)
 └── CMakeLists.txt       # The main build script for CMake
+```
+
 
 
 ---
