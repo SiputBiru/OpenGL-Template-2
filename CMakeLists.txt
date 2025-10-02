@@ -4,10 +4,11 @@
 cmake_minimum_required(VERSION 4.1)
 project(OpenGLProject VERSION 0.1 LANGUAGES CXX C)
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # =============================================================================
 # DEPENDENCY MANAGEMENT
@@ -36,12 +37,28 @@ find_package(OpenGL REQUIRED)
 # DEFINE THE EXECUTABLE
 # =============================================================================
 # It's more robust to list sources explicitly.
-set(PROJECT_SOURCES
-    src/Main.cpp
-    # src/App.cpp
-)
+# set(PROJECT_SOURCES
+#     src/Main.cpp
+#     src/EBO.cpp
+#     src/ShaderClass.cpp
+#     src/VAO.cpp
+#     src/VBO.cpp
+#     # src/App.cpp
+# )
+
+file(GLOB PROJECT_SOURCES "src/*.cpp")
+
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+# file all files in the assets directory
+add_custom_command(
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+    "${CMAKE_SOURCE_DIR}/assets/shaders"
+    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders"
+    COMMENT "Copying shaders directory to build folder"
+)
 
 # =============================================================================
 # CONFIGURE TARGET PROPERTIES
@@ -59,18 +76,3 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     glad
 )
 
-# (The rest of the file, like asset management, is mostly okay, but I've fixed the clean target)
-# =============================================================================
-# CUSTOM CLEAN TARGET
-# =============================================================================
-add_custom_target(clean_all
-    COMMENT "Cleaning the build directory..."
-    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/CMakeFiles"
-    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/assets"
-    COMMAND ${CMAKE_COMMAND} -E remove_directory "${CMAKE_BINARY_DIR}/_deps" # Where FetchContent downloads
-    COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_BINARY_DIR}/CMakeCache.txt"
-    COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_BINARY_DIR}/cmake_install.cmake"
-    COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_BINARY_DIR}/compile_commands.json"
-    COMMAND ${CMAKE_COMMAND} -E rm -f "${CMAKE_BINARY_DIR}/${PROJECT_NAME}"
-)
-# ...
