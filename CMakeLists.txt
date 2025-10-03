@@ -1,7 +1,7 @@
 # =============================================================================
 # CMAKE PROJECT CONFIGURATION
 # =============================================================================
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 4.1)
 project(OpenGLProject VERSION 0.1 LANGUAGES CXX C)
 
 
@@ -27,6 +27,10 @@ FetchContent_MakeAvailable(glfw glm)
 add_subdirectory(${CMAKE_SOURCE_DIR}/external/glad)
 message(STATUS "Added local GLAD from external/glad")
 
+# Local stb image
+add_subdirectory(${CMAKE_SOURCE_DIR}/external/stb)
+message(STATUS "Added local stb image from external/stb")
+
 # =============================================================================
 # FIND SYSTEM LIBRARIES
 # =============================================================================
@@ -36,29 +40,40 @@ find_package(OpenGL REQUIRED)
 # =============================================================================
 # DEFINE THE EXECUTABLE
 # =============================================================================
-# It's more robust to list sources explicitly.
-# set(PROJECT_SOURCES
-#     src/Main.cpp
-#     src/EBO.cpp
-#     src/ShaderClass.cpp
-#     src/VAO.cpp
-#     src/VBO.cpp
-#     # src/App.cpp
-# )
-
 file(GLOB PROJECT_SOURCES "src/*.cpp")
 
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-# file all files in the assets directory
-add_custom_command(
-    TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_SOURCE_DIR}/assets/shaders"
-    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/shaders"
-    COMMENT "Copying shaders directory to build folder"
+
+# =============================================================================
+# HANDLE SHADER ASSET DEPENDENCIES
+# =============================================================================
+
+file(GLOB SHADER_SOURCES "${CMAKE_SOURCE_DIR}/assets/shaders/*")
+
+foreach(SHADER_SOURCE ${SHADER_SOURCES})
+  get_filename_component(SHADER_FILENAME ${SHADER_SOURCE} NAME)
+  set(SHADER_DEST "${CMAKE_BINARY_DIR}/shaders/${SHADER_FILENAME}")
+
+  add_custom_command(
+        OUTPUT ${SHADER_DEST}
+        COMMAND ${CMAKE_COMMAND} -E copy ${SHADER_SOURCE} ${SHADER_DEST}
+        DEPENDS ${SHADER_SOURCE}
+        COMMENT "Copying shader ${SHADER_FILENAME}"
+    )
+
+  list(APPEND SHADER_DESTINATIONS ${SHADER_DEST})
+endforeach()
+
+add_custom_target(
+    copy_shaders ALL
+    DEPENDS ${SHADER_DESTINATIONS}
 )
+
+add_dependencies(${PROJECT_NAME} copy_shaders)
+
+
 
 # =============================================================================
 # CONFIGURE TARGET PROPERTIES
@@ -74,5 +89,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     OpenGL::GL
     glfw
     glad
+    stb
 )
 
