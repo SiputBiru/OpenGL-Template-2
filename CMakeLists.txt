@@ -47,31 +47,40 @@ set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAK
 
 
 # =============================================================================
-# HANDLE SHADER ASSET DEPENDENCIES
+# HANDLE ALL ASSET DEPENDENCIES (Shaders, Textures, Models, etc.)
 # =============================================================================
 
-file(GLOB SHADER_SOURCES "${CMAKE_SOURCE_DIR}/assets/shaders/*")
+# -- Define a reusable function to handle any asset subdirectory --
+function(add_asset_directory TARGET_NAME ASSET_SUBDIR)
+  file(GLOB_RECURSE ASSET_SOURCES "${CMAKE_SOURCE_DIR}/assets/${ASSET_SUBDIR}/*")
 
-foreach(SHADER_SOURCE ${SHADER_SOURCES})
-  get_filename_component(SHADER_FILENAME ${SHADER_SOURCE} NAME)
-  set(SHADER_DEST "${CMAKE_BINARY_DIR}/shaders/${SHADER_FILENAME}")
+  set(ASSET_DESTINATIONS "") # Start with an empty list of destination files
 
-  add_custom_command(
-        OUTPUT ${SHADER_DEST}
-        COMMAND ${CMAKE_COMMAND} -E copy ${SHADER_SOURCE} ${SHADER_DEST}
-        DEPENDS ${SHADER_SOURCE}
-        COMMENT "Copying shader ${SHADER_FILENAME}"
+  foreach(ASSET_SOURCE ${ASSET_SOURCES})
+    file(RELATIVE_PATH RELATIVE_ASSET_PATH "${CMAKE_SOURCE_DIR}/assets/${ASSET_SUBDIR}" ${ASSET_SOURCE})
+
+    set(ASSET_DEST "${CMAKE_BINARY_DIR}/${ASSET_SUBDIR}/${RELATIVE_ASSET_PATH}")
+
+    add_custom_command(
+            OUTPUT ${ASSET_DEST}
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${ASSET_SOURCE} ${ASSET_DEST}
+            DEPENDS ${ASSET_SOURCE}
+            COMMENT "Copying asset ${RELATIVE_ASSET_PATH}"
+        )
+    list(APPEND ASSET_DESTINATIONS ${ASSET_DEST})
+  endforeach()
+
+  add_custom_target(
+        copy_${ASSET_SUBDIR} ALL
+        DEPENDS ${ASSET_DESTINATIONS}
     )
 
-  list(APPEND SHADER_DESTINATIONS ${SHADER_DEST})
-endforeach()
+  add_dependencies(${TARGET_NAME} copy_${ASSET_SUBDIR})
+endfunction()
 
-add_custom_target(
-    copy_shaders ALL
-    DEPENDS ${SHADER_DESTINATIONS}
-)
 
-add_dependencies(${PROJECT_NAME} copy_shaders)
+add_asset_directory(${PROJECT_NAME} shaders)
+add_asset_directory(${PROJECT_NAME} textures)
 
 
 
